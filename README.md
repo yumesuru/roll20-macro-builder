@@ -1,6 +1,6 @@
 # Roll20 Macro Builder
 
-Roll20 editor page overlay for creating divider, check, intro, and outro macros.
+Roll20 editor page overlay for creating divider, intro, and outro macros.
 
 ## Install
 
