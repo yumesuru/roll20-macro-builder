@@ -1,26 +1,1299 @@
 // ==UserScript==
 // @name         Roll20 Macro Builder Panel
 // @namespace    local.roll20.macro.builder
-// @version      1.0.4
+// @version      1.0.6
 // @description  Roll20 화면 위에서 가름선/인트로/아웃트로 매크로를 생성합니다.
 // @updateURL    https://raw.githubusercontent.com/yumesuru/roll20-macro-builder/main/outputs/roll20-macro-builder.user.js
 // @downloadURL  https://raw.githubusercontent.com/yumesuru/roll20-macro-builder/main/outputs/roll20-macro-builder.user.js
 // @match        https://app.roll20.net/editor/*
 // @match        https://app.roll20.net/editor
-// @grant        none
+// @match        https://app.roll20.net/editor?*
+// @grant        GM_registerMenuCommand
+// @sandbox      DOM
+// @run-at       document-idle
+// @noframes
 // ==/UserScript==
 
-(async function () {
+(function () {
   "use strict";
 
-  const payload = "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";
-  const bytes = Uint8Array.from(atob(payload), (char) => char.charCodeAt(0));
+  const APP_ID = "roll20-macro-builder-panel";
+  const STATE_KEY = "roll20-macro-builder-userscript-state-v1";
+  const PANEL_KEY = "roll20-macro-builder-userscript-panel-v1";
+  const LAUNCHER_KEY = "roll20-macro-builder-userscript-launcher-v1";
+  const DEFAULT_RULE_CHIPS = [
+    "Call of Cthulhu 7th edition",
+    "멀티 호러 TRPG inSANe",
+    "현대 인술 배틀 RPG 시노비가미",
+  ];
+  const DEFAULT_COLOR_CHIPS = [
+    "#a4a4a4",
+    "#26674c",
+    "#7f47b8",
+    "#ed6b90",
+    "#2e2ca1",
+    "#57a421",
+    "#ec7731",
+  ];
 
-  if (!("DecompressionStream" in window)) {
-    throw new Error("Roll20 Macro Builder requires a browser with DecompressionStream support.");
+  if (document.getElementById(APP_ID)) return;
+
+  const host = document.createElement("div");
+  host.id = APP_ID;
+  host.style.cssText = "all: initial;";
+  (document.body || document.documentElement).append(host);
+  const root = host.attachShadow({ mode: "open" });
+
+  root.innerHTML = `
+    <style>
+      :host {
+        --bg: #f3f4f6;
+        --panel: #ffffff;
+        --line: #d9dee7;
+        --text: #202633;
+        --muted: #697386;
+        --accent: #2563eb;
+        --accent-hover: #1d4ed8;
+        --preview-width: 420px;
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      button, input, select, textarea { font: inherit; }
+      .launcher {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 2147483646;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        border: 1px solid #1d4ed8;
+        border-radius: 0;
+        padding: 8px 12px;
+        background: #2563eb;
+        color: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+      }
+      .launcher:hover {
+        border-color: #2563eb;
+        background: #fff;
+        color: #2563eb;
+      }
+      .panel {
+        position: fixed;
+        left: 80px;
+        top: 80px;
+        z-index: 2147483647;
+        display: none;
+        grid-template-rows: auto 1fr;
+        width: min(980px, calc(100vw - 32px));
+        height: min(720px, calc(100vh - 32px));
+        min-width: 680px;
+        min-height: 460px;
+        border: 1px solid #111827;
+        background: var(--panel);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+        resize: both;
+        overflow: hidden;
+      }
+      .panel.open { display: grid; }
+      .titlebar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 38px;
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--line);
+        background: #111827;
+        color: #fff;
+        cursor: move;
+        user-select: none;
+      }
+      .titlebar-title {
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .titlebar-actions {
+        display: flex;
+        gap: 6px;
+      }
+      .titlebar button,
+      button {
+        min-height: 30px;
+        border: 1px solid var(--line);
+        border-radius: 0;
+        padding: 6px 9px;
+        background: #fff;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .titlebar button {
+        border-color: #374151;
+        background: #1f2937;
+        color: #fff;
+      }
+      button:hover {
+        border-color: #b6bfcc;
+        background: #f9fafb;
+      }
+      .titlebar button:hover {
+        border-color: #4b5563;
+        background: #374151;
+      }
+      button.primary,
+      .tab.active {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+      }
+      button.primary:hover,
+      .tab.active:hover {
+        border-color: var(--accent-hover);
+        background: var(--accent-hover);
+      }
+      .app {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 0;
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .field-inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .field-inline input[type="number"] {
+        width: 78px;
+        padding: 5px 7px;
+        border: 1px solid var(--line);
+        border-radius: 0;
+        background: #fff;
+        color: var(--text);
+      }
+      .work {
+        display: grid;
+        grid-template-columns: minmax(330px, 0.82fr) minmax(300px, 1fr);
+        min-height: 0;
+      }
+      .controls {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 0;
+        border-right: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        padding: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      .form-wrap {
+        min-height: 0;
+        overflow: auto;
+        padding: 12px;
+      }
+      .form-grid {
+        display: grid;
+        gap: 11px;
+      }
+      .form-field {
+        display: grid;
+        gap: 6px;
+      }
+      .field-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        align-items: start;
+      }
+      label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .field-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 18px;
+      }
+      .field-label label {
+        min-width: 0;
+      }
+      .inline-toggle {
+        display: inline-flex;
+        align-items: center;
+        flex: 0 0 auto;
+        cursor: pointer;
+      }
+      .inline-toggle input {
+        width: auto;
+        margin: 0;
+      }
+      input[type="text"],
+      input[type="color"],
+      input[type="number"],
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 0;
+        background: #fff;
+        color: var(--text);
+      }
+      input[type="text"],
+      select {
+        min-height: 32px;
+        padding: 6px 8px;
+      }
+      input[type="color"] {
+        height: 34px;
+        padding: 3px;
+        cursor: pointer;
+      }
+      select { cursor: pointer; }
+      .color-row {
+        display: grid;
+        grid-template-columns: 52px 1fr auto;
+        gap: 7px;
+        align-items: center;
+      }
+      .preset-row,
+      .inline-action-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 7px;
+        align-items: center;
+      }
+      .checkbox-field {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .checkbox-field input { width: auto; }
+      .saved-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        max-width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 8px;
+        background: #fff;
+        color: var(--text);
+        font-size: 12px;
+      }
+      .chip button {
+        min-height: 0;
+        border: 0;
+        padding: 0 2px;
+        background: transparent;
+        color: var(--muted);
+        line-height: 1;
+      }
+      .color-chip {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        padding: 0;
+        border: 1px solid rgba(0, 0, 0, 0.18);
+      }
+      .color-chip-wrap {
+        padding-top: 3px;
+        padding-bottom: 3px;
+      }
+      .repeat-list {
+        display: grid;
+        gap: 7px;
+      }
+      .repeat-row {
+        display: grid;
+        grid-template-columns: minmax(76px, 0.42fr) minmax(120px, 1fr) auto;
+        gap: 7px;
+        align-items: center;
+      }
+      .repeat-row button,
+      .add-row {
+        min-height: 32px;
+      }
+      .preview-pane {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 0;
+        background: var(--panel);
+      }
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        min-height: 36px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .preview-wrap {
+        min-height: 0;
+        overflow: auto;
+        padding: 14px;
+        background: #e8eaee;
+      }
+      .roll20-chat {
+        width: min(100%, var(--preview-width));
+        min-height: 100%;
+        margin: 0 auto;
+        padding: 12px;
+        border: 1px solid #b9c0cc;
+        border-radius: 0;
+        background: #f7f7f7;
+        color: #222;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 13px;
+      }
+      .message {
+        margin: 0 0 8px;
+        overflow-wrap: anywhere;
+      }
+      .message.desc {
+        text-align: center;
+        font-weight: 700;
+      }
+      .message.meta {
+        color: #8a8f9a;
+        font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+        font-size: 12px;
+      }
+      .message img {
+        display: block;
+        max-width: 100%;
+        margin: 0 auto;
+        border: 0;
+      }
+      #macroOutput {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .status {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        white-space: nowrap;
+      }
+      @media (max-width: 760px) {
+        .panel {
+          min-width: 320px;
+        }
+        .work {
+          grid-template-columns: 1fr;
+          grid-template-rows: minmax(300px, 0.95fr) minmax(260px, 1fr);
+        }
+        .controls {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .tabs {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .field-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+    <button class="launcher" type="button">매크로</button>
+    <section class="panel" role="dialog" aria-label="Roll20 매크로 생성기">
+      <div class="titlebar">
+        <div class="titlebar-title">Roll20 매크로 생성기</div>
+        <div class="titlebar-actions">
+          <button type="button" data-reset-panel>위치 초기화</button>
+          <button type="button" data-close-panel>닫기</button>
+        </div>
+      </div>
+      <div class="app">
+        <div class="toolbar">
+          <label class="field-inline">
+            미리보기 폭
+            <input id="previewWidth" type="number" min="260" max="900" step="10" value="420">
+          </label>
+          <div>
+            <button id="copyMacro" type="button" class="primary">매크로 복사</button>
+            <button id="resetForm" type="button">현재 양식 초기화</button>
+          </div>
+        </div>
+        <main class="work">
+          <section class="controls" aria-label="매크로 설정">
+            <div class="tabs" role="tablist" aria-label="양식 선택">
+              <button class="tab active" type="button" data-template="divider">가름선</button>
+              <button class="tab" type="button" data-template="intro">인트로</button>
+              <button class="tab" type="button" data-template="outro">아웃트로</button>
+            </div>
+            <div class="form-wrap">
+              <div id="form" class="form-grid"></div>
+            </div>
+          </section>
+          <section class="preview-pane" aria-label="미리보기">
+            <div class="section-title">
+              <span>실시간 미리보기</span>
+              <span class="status" id="saveStatus">준비됨</span>
+            </div>
+            <div class="preview-wrap">
+              <div id="preview" class="roll20-chat"></div>
+            </div>
+          </section>
+        </main>
+        <textarea id="macroOutput" readonly spellcheck="false" aria-hidden="true" tabindex="-1"></textarea>
+      </div>
+    </section>
+  `;
+
+  const launcher = root.querySelector(".launcher");
+  const panel = root.querySelector(".panel");
+  const titlebar = root.querySelector(".titlebar");
+  const closeButton = root.querySelector("[data-close-panel]");
+  const resetPanelButton = root.querySelector("[data-reset-panel]");
+  const form = root.querySelector("#form");
+  const preview = root.querySelector("#preview");
+  const macroOutput = root.querySelector("#macroOutput");
+  const previewWidth = root.querySelector("#previewWidth");
+  const saveStatus = root.querySelector("#saveStatus");
+  const tabs = [...root.querySelectorAll(".tab")];
+
+  let activeTemplate = "divider";
+  let values = {};
+  let savedRules = [];
+  let savedColors = [];
+
+  function dividerMacro(color) {
+    return `/desc [───────](#" style="text-decoration:none; font-style: normal; color:#000000;!) [✷](#" style="font-style: normal; text-decoration:none; color:${color};) [───────](#" style="text-decoration:none; font-style: normal; color:#000000;)`;
   }
 
-  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
-  const source = await new Response(stream).text();
-  (0, eval)(source);
+  const templates = {
+    divider: {
+      name: "가름선",
+      fields: [
+        { id: "primaryColor", label: "장식 색", type: "color", value: "#ed6b90" },
+      ],
+      build: (v) => dividerMacro(v.primaryColor),
+    },
+    intro: {
+      name: "인트로",
+      fields: [
+        { id: "primaryColor", label: "메인 색", type: "color", value: "#ed6b90" },
+        { id: "rule", label: "룰", type: "rule", value: "" },
+        { id: "title", label: "제목", type: "text", value: "", row: "titleWriter" },
+        { id: "writer", label: "라이터", type: "text", value: "", row: "titleWriter" },
+        { id: "imageEnabled", label: "이미지 사용", type: "checkbox", value: false },
+        { id: "imageUrl", label: "이미지 링크", type: "text", value: "", showWhen: "imageEnabled" },
+        { id: "includeKpc", label: "KPC 줄 사용", type: "checkbox", value: true },
+        { id: "kpcLabel", label: "KPC 표기", type: "select", value: "", options: ["KPC", "GMPC", "GM"], row: "introKpc", showWhen: "includeKpc" },
+        { id: "kpcName", label: "KPC 이름", type: "text", value: "", row: "introKpc", showWhen: "includeKpc" },
+        { id: "pcs", label: "PC", type: "pcList", mode: "name", labelLabel: "PC 표기", labelOptions: ["PC", "PL"], valueLabel: "이름", value: [{ label: "PC", value: "" }] },
+        { id: "date", label: "일시", type: "datetime", value: "" },
+      ],
+      build: (v) => [
+        dividerMacro(v.primaryColor),
+        `/desc [ ${v.rule} ](#" style="color:#333333; display:block; text-decoration: none; font-size: 12px; font-weight: normal;)`,
+        `/desc [ ${v.title} ](#" style="color: #ffffff; background-color:${v.primaryColor}; padding:6px; margin:1px; font-size:14px; font-weight:bold; text-align:center; user-select:none; display:block; text-decoration:none; font-style: normal;)`,
+        `/desc [ Written by ${v.writer} ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)`,
+        introImageLine(v),
+        introKpcLine(v),
+        introPcLines(v),
+        `/desc [ Date ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)[${v.date}](#" style="color:#000000; font-style: normal; font-size:12px; font-weight: normal; display:block; text-decoration:none;)`,
+        dividerMacro(v.primaryColor),
+      ].filter(Boolean).join("\n"),
+    },
+    outro: {
+      name: "아웃트로",
+      fields: [
+        { id: "primaryColor", label: "메인 색", type: "color", value: "#ed6b90" },
+        { id: "importIntro", label: "인트로 정보 불러오기", type: "action", action: "importIntroToOutro" },
+        { id: "rule", label: "룰", type: "rule", value: "" },
+        { id: "title", label: "제목", type: "text", value: "", row: "titleWriter" },
+        { id: "writer", label: "라이터", type: "text", value: "", row: "titleWriter" },
+        { id: "includeEnding", type: "state", value: true },
+        { id: "ending", label: "엔딩", type: "text", value: "", toggleField: "includeEnding" },
+        { id: "outroNameMode", label: "인트로 모드", type: "checkbox", value: false },
+        { id: "includeKpc", label: "KPC 줄 사용", type: "checkbox", value: true },
+        { id: "kpcLabel", label: "KPC 표기", type: "select", value: "", options: ["KPC", "GMPC", "GM"], row: "outroKpc", showWhen: "includeKpc", showWhenValue: { field: "outroNameMode", value: true } },
+        { id: "kpcName", label: "KPC 이름", type: "text", value: "", row: "outroKpc", showWhen: "includeKpc" },
+        { id: "kpcResult", label: "KPC 결과", type: "text", value: "", row: "outroKpc", showWhen: "includeKpc", showWhenValue: { field: "outroNameMode", value: false } },
+        { id: "pcs", label: "PC", type: "pcList", mode: "result", labelLabel: "PC 이름", valueLabel: "결과", value: [{ label: "", value: "" }] },
+        { id: "includeReward", type: "state", value: true },
+        { id: "reward", label: "보상", type: "text", value: "", toggleField: "includeReward" },
+        { id: "includeEndLabel", type: "state", value: true },
+        { id: "endLabel", label: "마무리 문구", type: "select", value: "END", options: ["END", "完結"], toggleField: "includeEndLabel" },
+      ],
+      build: (v) => [
+        dividerMacro(v.primaryColor),
+        `/desc [ ${v.rule} ](#" style="color:#333333; display:block; text-decoration: none; font-size: 12px; font-weight: normal;)`,
+        `/desc [  ${v.title}  ](#" style="color:${v.primaryColor}; font-size: 13px; font-style: normal; text-decoration:none; line-height:1.5; padding:1px;)[w. ${v.writer}](#" style="color:#000000; font-style: normal; font-size:10px; font-weight: normal; display:block; text-decoration:none;)`,
+        outroEndingLine(v),
+        outroKpcLine(v),
+        outroPcLines(v),
+        outroRewardLine(v),
+        outroEndLabelLine(v),
+        dividerMacro(v.primaryColor),
+        `/desc [수고하셨습니다!](#" style="color:#333333; font-style: italic; font-size:12px; font-weight: normal; display:block; text-decoration:none;)`,
+      ].filter(Boolean).join("\n"),
+    },
+  };
+
+  function defaultValues() {
+    const result = {};
+    for (const [key, template] of Object.entries(templates)) {
+      result[key] = {};
+      for (const field of template.fields) {
+        result[key][field.id] = Array.isArray(field.value)
+          ? field.value.map((item) => ({ ...item }))
+          : field.value;
+      }
+    }
+    return result;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function uniqueList(items) {
+    return [...new Set(items.map((item) => String(item).trim()).filter(Boolean))];
+  }
+
+  function normalizeColor(value) {
+    const color = String(value).trim();
+    return /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : "";
+  }
+
+  function renderRuleChips(rules, removable) {
+    return rules.map((rule) => `<span class="chip"><button type="button" data-use-rule="${escapeHtml(rule)}">${escapeHtml(rule)}</button>${removable ? `<button type="button" data-remove-rule="${escapeHtml(rule)}" aria-label="저장한 룰 삭제">×</button>` : ""}</span>`).join("");
+  }
+
+  function renderColorChips(colors, removable) {
+    return colors.map((savedColor) => `<span class="chip color-chip-wrap"><button class="color-chip" type="button" data-use-color="${savedColor}" style="background:${savedColor}" aria-label="${savedColor} 적용"></button><span>${savedColor}</span>${removable ? `<button type="button" data-remove-color="${savedColor}" aria-label="저장한 색상 삭제">×</button>` : ""}</span>`).join("");
+  }
+
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function formatDateTime(date) {
+    const hours = date.getHours();
+    const period = hours < 12 ? "AM" : "PM";
+    const displayHours = hours % 12 || 12;
+    return `${date.getFullYear()}.${pad2(date.getMonth() + 1)}.${pad2(date.getDate())}. ${period} ${pad2(displayHours)}:${pad2(date.getMinutes())}`;
+  }
+
+  function sanitizeStyle(style) {
+    return style.replace(/[\r\n]/g, " ").replace(/"/g, "&quot;").trim();
+  }
+
+  function parseStyledLinks(line) {
+    const pattern = /\[([^\]]*)\]\(#"\s*style="([^)]*)\)/g;
+    let html = "";
+    let lastIndex = 0;
+    let match;
+    while ((match = pattern.exec(line)) !== null) {
+      html += escapeHtml(line.slice(lastIndex, match.index));
+      html += `<a href="#" style="${sanitizeStyle(match[2])}">${escapeHtml(match[1])}</a>`;
+      lastIndex = pattern.lastIndex;
+    }
+    html += escapeHtml(line.slice(lastIndex));
+    return html || "&nbsp;";
+  }
+
+  function renderDescContent(content) {
+    const imageMatch = content.trim().match(/^\[img\]\((.+)\)$/i) || content.trim().match(/^\((.+)\)$/);
+    if (imageMatch) return `<img src="${escapeHtml(imageMatch[1].trim())}" alt="">`;
+    return parseStyledLinks(content);
+  }
+
+  function activeColor() {
+    return values[activeTemplate]?.primaryColor || templates.divider.fields[0].value;
+  }
+
+  function setSharedColor(color) {
+    const normalized = normalizeColor(color);
+    if (!normalized) return false;
+    for (const key of Object.keys(templates)) {
+      if (Object.prototype.hasOwnProperty.call(values[key], "primaryColor")) {
+        values[key].primaryColor = normalized;
+      }
+    }
+    return true;
+  }
+
+  function renderLine(line) {
+    const trimmed = line.trim();
+    if (!trimmed) return "";
+    if (trimmed === "#0") {
+      return `<div class="message desc">${parseStyledLinks(dividerMacro(activeColor()).replace(/^\/desc\s+/, ""))}</div>`;
+    }
+    if (trimmed.startsWith("#")) {
+      return `<div class="message meta">${escapeHtml(trimmed)}</div>`;
+    }
+    if (trimmed.startsWith("/desc ")) {
+      return `<div class="message desc">${renderDescContent(line.replace(/^\/desc\s+/, ""))}</div>`;
+    }
+    if (trimmed.startsWith("/desc")) {
+      return `<div class="message desc">${renderDescContent(line.replace(/^\/desc\s*/, ""))}</div>`;
+    }
+    if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
+      return `<div class="message desc"><strong>${parseStyledLinks(trimmed.slice(2, -2))}</strong></div>`;
+    }
+    return "";
+  }
+
+  function pcRows(value) {
+    return Array.isArray(value) && value.length > 0 ? value : [{ label: "", value: "" }];
+  }
+
+  function introPcLines(v) {
+    return pcRows(v.pcs).map((pc) =>
+      `/desc [  ${pc.label || ""}  ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)[${pc.value || ""}](#" style="color:#000000; font-style: normal; font-size:12px; font-weight: normal; display:block; text-decoration:none;)`
+    ).join("\n");
+  }
+
+  function introImageLine(v) {
+    const imageUrl = String(v.imageUrl || "").trim();
+    return v.imageEnabled && imageUrl ? `/desc [img](${imageUrl})` : "";
+  }
+
+  function introKpcLine(v) {
+    return v.includeKpc
+      ? `/desc [  ${v.kpcLabel}  ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)[${v.kpcName}](#" style="color:#000000; font-style: normal; font-size:12px; font-weight: normal; display:block; text-decoration:none;)`
+      : "";
+  }
+
+  function outroEndingLine(v) {
+    return v.includeEnding
+      ? `/desc [  END  ](#" style="color:#000000; font-style: normal; font-size:12px; font-weight: normal; display:block; text-decoration:none;)[${v.ending}](#" style="color: #ffffff; background-color:${v.primaryColor}; margin:3px; padding:6px; font-size:14px; font-weight:bold; text-align:center; user-select:none; display:block; text-decoration:none; font-style: normal;)`
+      : "";
+  }
+
+  function outroKpcLine(v) {
+    if (!v.includeKpc) return "";
+    if (v.outroNameMode) {
+      return `/desc [  ${v.kpcLabel}  ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)[${v.kpcName}](#" style="color:#000000; font-style: normal; font-size:13px; font-weight: normal; display:block; text-decoration:none;)`;
+    }
+    return `/desc [  ${v.kpcName}  ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)[${v.kpcResult}](#" style="color:#000000; font-style: normal; font-size:13px; font-weight: normal; display:block; text-decoration:none;)`;
+  }
+
+  function outroPcLines(v) {
+    return pcRows(v.pcs).map((pc) =>
+      `/desc [  ${pc.label || ""}  ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)[${pc.value || ""}](#" style="color:#000000; font-style: normal; font-size:13px; font-weight: normal; display:block; text-decoration:none;)`
+    ).join("\n");
+  }
+
+  function outroRewardLine(v) {
+    return v.includeReward
+      ? `/desc [ 보상 ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)[${v.reward}](#" style="color:#000000; font-style: normal; font-size:13px; font-weight: normal; display:block; text-decoration:none; padding: 2px, 2px;)`
+      : "";
+  }
+
+  function outroEndLabelLine(v) {
+    return v.includeEndLabel
+      ? `/desc [ ${v.endLabel || "END"} ](#" style="font-style: normal; text-decoration:none; color:${v.primaryColor}; line-height:1.5; padding:1px;)`
+      : "";
+  }
+
+  function currentMacro() {
+    return templates[activeTemplate].build(values[activeTemplate]);
+  }
+
+  function importIntroToOutro() {
+    const intro = values.intro || {};
+    const outro = values.outro || {};
+    const currentOutroPcs = pcRows(outro.pcs);
+    const introPcs = pcRows(intro.pcs);
+
+    outro.title = intro.title || "";
+    outro.rule = intro.rule || "";
+    outro.writer = intro.writer || "";
+    outro.kpcLabel = intro.kpcLabel || "";
+    outro.kpcName = intro.kpcName || "";
+    outro.pcs = introPcs.map((pc, index) => outro.outroNameMode
+      ? { label: pc.label || "PC", value: pc.value || "" }
+      : { label: pc.value || "", value: currentOutroPcs[index]?.value || "" });
+
+    values.outro = outro;
+    renderAll();
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STATE_KEY, JSON.stringify({
+        activeTemplate,
+        values,
+        savedRules,
+        savedColors,
+        previewWidth: Number(previewWidth.value) || 420,
+      }));
+      saveStatus.textContent = "자동 저장됨";
+    } catch {
+      saveStatus.textContent = "자동 저장 불가";
+    }
+  }
+
+  function loadState() {
+    values = defaultValues();
+    try {
+      const state = JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
+      if (templates[state.activeTemplate]) activeTemplate = state.activeTemplate;
+      if (state.values && typeof state.values === "object") {
+        for (const key of Object.keys(templates)) {
+          values[key] = { ...values[key], ...(state.values[key] || {}) };
+        }
+      }
+      const sharedColor = normalizeColor(values[activeTemplate]?.primaryColor)
+        || normalizeColor(values.intro?.primaryColor)
+        || normalizeColor(values.divider?.primaryColor)
+        || templates.divider.fields[0].value;
+      setSharedColor(sharedColor);
+      savedRules = uniqueList(Array.isArray(state.savedRules) ? state.savedRules : []).filter((rule) => !DEFAULT_RULE_CHIPS.includes(rule));
+      savedColors = uniqueList(Array.isArray(state.savedColors) ? state.savedColors.map(normalizeColor) : []).filter((color) => !DEFAULT_COLOR_CHIPS.includes(color));
+      previewWidth.value = state.previewWidth || 420;
+    } catch {
+      values = defaultValues();
+      savedRules = [];
+      savedColors = [];
+    }
+  }
+
+  function renderTabs() {
+    for (const tab of tabs) {
+      const active = tab.dataset.template === activeTemplate;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+    }
+  }
+
+  function renderRuleField(field, value) {
+    const chips = renderRuleChips(DEFAULT_RULE_CHIPS, false) + renderRuleChips(savedRules, true);
+    return `<div class="form-field">
+      <label for="${field.id}">${field.label}</label>
+      <div class="preset-row">
+        <input id="${field.id}" data-field="${field.id}" type="text" value="${escapeHtml(value)}" placeholder="직접 입력">
+        <button type="button" data-save-rule>룰 저장</button>
+      </div>
+      <div class="saved-list">${chips}</div>
+    </div>`;
+  }
+
+  function renderColorField(field, value) {
+    const color = normalizeColor(value) || field.value;
+    const chips = renderColorChips(DEFAULT_COLOR_CHIPS, false) + renderColorChips(savedColors, true);
+    return `<div class="form-field">
+      <label for="${field.id}">${field.label}</label>
+      <div class="color-row">
+        <input id="${field.id}" data-field="${field.id}" type="color" value="${escapeHtml(color)}">
+        <input data-field="${field.id}" type="text" value="${escapeHtml(value)}" aria-label="${field.label} 색상 코드">
+        <button type="button" data-save-color="${field.id}">저장</button>
+      </div>
+      <div class="saved-list">${chips}</div>
+    </div>`;
+  }
+
+  function fieldLabel(field) {
+    if (!field.toggleField) return `<label for="${field.id}">${field.label}</label>`;
+    const checked = values[activeTemplate][field.toggleField] !== false;
+    return `<div class="field-label">
+      <label for="${field.id}">${field.label}</label>
+      <label class="inline-toggle" aria-label="${field.label} 사용">
+        <input data-field="${field.toggleField}" type="checkbox" ${checked ? "checked" : ""}>
+      </label>
+    </div>`;
+  }
+
+  function fieldDisabled(field) {
+    return field.toggleField && values[activeTemplate][field.toggleField] === false ? " disabled" : "";
+  }
+
+  function renderField(field) {
+    if (field.showWhen && !values[activeTemplate][field.showWhen]) return "";
+    if (field.showWhenValue && values[activeTemplate][field.showWhenValue.field] !== field.showWhenValue.value) return "";
+    if (field.type === "state") return "";
+    const value = values[activeTemplate][field.id] ?? "";
+    if (field.type === "color") return renderColorField(field, value);
+    if (field.type === "rule") return renderRuleField(field, value);
+    if (field.type === "action") {
+      return `<div class="form-field">
+        <button type="button" data-action="${field.action}">${field.label}</button>
+      </div>`;
+    }
+    if (field.type === "checkbox") {
+      return `<div class="form-field">
+        <label class="checkbox-field">
+          <input data-field="${field.id}" type="checkbox" ${value ? "checked" : ""}>
+          <span>${field.label}</span>
+        </label>
+      </div>`;
+    }
+    if (field.type === "datetime") {
+      return `<div class="form-field">
+        ${fieldLabel(field)}
+        <div class="inline-action-row">
+          <input id="${field.id}" data-field="${field.id}" type="text" value="${escapeHtml(value)}"${fieldDisabled(field)}>
+          <button type="button" data-current-datetime="${field.id}">현재 시각</button>
+        </div>
+      </div>`;
+    }
+    if (field.type === "select") {
+      const options = [`<option value="">선택</option>`].concat(field.options.map((option) =>
+        `<option value="${escapeHtml(option)}"${value === option ? " selected" : ""}>${escapeHtml(option)}</option>`
+      ));
+      return `<div class="form-field">
+        ${fieldLabel(field)}
+        <select id="${field.id}" data-field="${field.id}"${fieldDisabled(field)}>${options.join("")}</select>
+      </div>`;
+    }
+    if (field.type === "pcList") {
+      const pcField = activeTemplate === "outro" && field.id === "pcs" && values.outro?.outroNameMode
+        ? { ...field, mode: "name", labelLabel: "PC 표기", labelOptions: ["PC", "PL"], valueLabel: "이름" }
+        : field;
+      const rows = pcRows(value);
+      const labelLabel = pcField.labelLabel || "PC 표기";
+      const valueLabel = pcField.valueLabel || (pcField.mode === "result" ? "결과" : "이름");
+      return `<div class="form-field">
+        <label>${pcField.label}</label>
+        <div class="repeat-list" data-repeat="${pcField.id}">
+          ${rows.map((row, index) => `<div class="repeat-row">
+            ${pcField.labelOptions
+              ? `<select data-repeat-field="${pcField.id}" data-index="${index}" data-prop="label" aria-label="${labelLabel}">${pcField.labelOptions.map((option) => `<option value="${escapeHtml(option)}"${(row.label || pcField.labelOptions[0]) === option ? " selected" : ""}>${escapeHtml(option)}</option>`).join("")}</select>`
+              : `<input data-repeat-field="${pcField.id}" data-index="${index}" data-prop="label" type="text" value="${escapeHtml(row.label || "")}" aria-label="${labelLabel}" placeholder="${labelLabel}">`}
+            <input data-repeat-field="${pcField.id}" data-index="${index}" data-prop="value" type="text" value="${escapeHtml(row.value || "")}" aria-label="PC ${valueLabel}" placeholder="PC ${valueLabel}">
+            <button type="button" data-remove-row="${pcField.id}" data-index="${index}" ${rows.length === 1 ? "disabled" : ""}>삭제</button>
+          </div>`).join("")}
+        </div>
+        <button class="add-row" type="button" data-add-row="${pcField.id}">PC 추가</button>
+      </div>`;
+    }
+    return `<div class="form-field">
+      ${fieldLabel(field)}
+      <input id="${field.id}" data-field="${field.id}" type="text" value="${escapeHtml(value)}"${fieldDisabled(field)}>
+    </div>`;
+  }
+
+  function renderForm() {
+    const template = templates[activeTemplate];
+    const parts = [];
+    for (let index = 0; index < template.fields.length; index += 1) {
+      const field = template.fields[index];
+      if (!field.row) {
+        parts.push(renderField(field));
+        continue;
+      }
+      const rowFields = [field];
+      while (template.fields[index + 1]?.row === field.row) {
+        index += 1;
+        rowFields.push(template.fields[index]);
+      }
+      const rowContent = rowFields.map(renderField).join("");
+      if (rowContent.trim()) parts.push(`<div class="field-row">${rowContent}</div>`);
+    }
+    form.innerHTML = parts.join("");
+  }
+
+  function renderOutput() {
+    const macro = currentMacro();
+    const width = Math.max(260, Math.min(900, Number(previewWidth.value) || 420));
+    root.host.style.setProperty("--preview-width", `${width}px`);
+    macroOutput.value = macro;
+    preview.innerHTML = macro.split(/\r?\n/).map(renderLine).join("");
+    saveState();
+  }
+
+  function renderAll() {
+    renderTabs();
+    renderForm();
+    renderOutput();
+  }
+
+  async function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const copyArea = document.createElement("textarea");
+      copyArea.value = text;
+      copyArea.setAttribute("readonly", "");
+      copyArea.style.position = "fixed";
+      copyArea.style.left = "-9999px";
+      document.body.append(copyArea);
+      copyArea.select();
+      document.execCommand("copy");
+      copyArea.remove();
+    }
+    saveStatus.textContent = "매크로 복사됨";
+    window.setTimeout(() => {
+      saveStatus.textContent = "자동 저장됨";
+    }, 1200);
+  }
+
+  function savePanelState() {
+    const rect = panel.getBoundingClientRect();
+    localStorage.setItem(PANEL_KEY, JSON.stringify({
+      left: Math.round(rect.left),
+      top: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      open: panel.classList.contains("open"),
+    }));
+  }
+
+  function loadPanelState() {
+    try {
+      const state = JSON.parse(localStorage.getItem(PANEL_KEY) || "{}");
+      const left = Number.isFinite(state.left) ? state.left : 80;
+      const top = Number.isFinite(state.top) ? state.top : 80;
+      const width = Number.isFinite(state.width) ? state.width : Math.min(980, window.innerWidth - 32);
+      const height = Number.isFinite(state.height) ? state.height : Math.min(720, window.innerHeight - 32);
+      panel.style.left = `${Math.max(8, Math.min(left, window.innerWidth - 120))}px`;
+      panel.style.top = `${Math.max(8, Math.min(top, window.innerHeight - 80))}px`;
+      panel.style.width = `${Math.max(680, Math.min(width, window.innerWidth - 16))}px`;
+      panel.style.height = `${Math.max(460, Math.min(height, window.innerHeight - 16))}px`;
+      panel.classList.toggle("open", Boolean(state.open));
+    } catch {
+      panel.style.left = "80px";
+      panel.style.top = "80px";
+    }
+  }
+
+  function resetPanelPosition() {
+    panel.style.left = "80px";
+    panel.style.top = "80px";
+    panel.style.width = `${Math.min(980, window.innerWidth - 32)}px`;
+    panel.style.height = `${Math.min(720, window.innerHeight - 32)}px`;
+    savePanelState();
+  }
+
+  let launcherPositionRatio = null;
+
+  function launcherBounds() {
+    const rect = launcher.getBoundingClientRect();
+    const width = Math.max(launcher.offsetWidth || 0, rect.width || 0, 72);
+    const height = Math.max(launcher.offsetHeight || 0, rect.height || 0, 34);
+    return {
+      maxLeft: Math.max(0, window.innerWidth - width),
+      maxTop: Math.max(0, window.innerHeight - height),
+    };
+  }
+
+  function setLauncherPosition(left, top) {
+    const bounds = launcherBounds();
+    const nextLeft = Math.max(0, Math.min(left, bounds.maxLeft));
+    const nextTop = Math.max(0, Math.min(top, bounds.maxTop));
+    launcher.style.left = `${nextLeft}px`;
+    launcher.style.top = `${nextTop}px`;
+    launcher.style.right = "auto";
+    launcher.style.bottom = "auto";
+    launcherPositionRatio = {
+      left: bounds.maxLeft ? nextLeft / bounds.maxLeft : 0,
+      top: bounds.maxTop ? nextTop / bounds.maxTop : 0,
+    };
+  }
+
+  function saveLauncherState() {
+    const rect = launcher.getBoundingClientRect();
+    const bounds = launcherBounds();
+    launcherPositionRatio = {
+      left: bounds.maxLeft ? rect.left / bounds.maxLeft : 0,
+      top: bounds.maxTop ? rect.top / bounds.maxTop : 0,
+    };
+    localStorage.setItem(LAUNCHER_KEY, JSON.stringify({
+      left: Math.round(rect.left),
+      top: Math.round(rect.top),
+      leftRatio: launcherPositionRatio.left,
+      topRatio: launcherPositionRatio.top,
+    }));
+  }
+
+  function loadLauncherState() {
+    try {
+      const state = JSON.parse(localStorage.getItem(LAUNCHER_KEY) || "{}");
+      const bounds = launcherBounds();
+      if (Number.isFinite(state.leftRatio) && Number.isFinite(state.topRatio)) {
+        setLauncherPosition(state.leftRatio * bounds.maxLeft, state.topRatio * bounds.maxTop);
+        return;
+      }
+      if (!Number.isFinite(state.left) || !Number.isFinite(state.top)) return;
+      setLauncherPosition(state.left, state.top);
+    } catch {
+      // Keep default bottom-right position.
+    }
+  }
+
+  function adjustLauncherToViewport() {
+    if (!launcherPositionRatio) return;
+    const bounds = launcherBounds();
+    setLauncherPosition(
+      launcherPositionRatio.left * bounds.maxLeft,
+      launcherPositionRatio.top * bounds.maxTop
+    );
+    saveLauncherState();
+  }
+
+  if (typeof GM_registerMenuCommand === "function") {
+    GM_registerMenuCommand("매크로 버튼/패널 위치 복원", () => {
+      const bounds = launcherBounds();
+      setLauncherPosition(bounds.maxLeft - 18, bounds.maxTop - 18);
+      saveLauncherState();
+      panel.classList.add("open");
+      resetPanelPosition();
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      activeTemplate = tab.dataset.template;
+      renderAll();
+    });
+  });
+
+  function handleFormInput(event) {
+    const repeatField = event.target.dataset.repeatField;
+    if (repeatField) {
+      const index = Number(event.target.dataset.index);
+      const prop = event.target.dataset.prop;
+      const rows = pcRows(values[activeTemplate][repeatField]).map((row) => ({ ...row }));
+      rows[index][prop] = event.target.value;
+      values[activeTemplate][repeatField] = rows;
+      renderOutput();
+      return;
+    }
+    const field = event.target.dataset.field;
+    if (!field) return;
+    values[activeTemplate][field] = event.target.type === "checkbox" ? event.target.checked : event.target.value;
+    if (activeTemplate === "outro" && field === "outroNameMode") {
+      values.outro.pcs = pcRows(values.outro.pcs).map((row) => event.target.checked
+        ? { label: ["PC", "PL"].includes(row.label) ? row.label : "PC", value: row.label || row.value || "" }
+        : { label: row.value || row.label || "", value: "" });
+    }
+    if (event.target.type === "color") {
+      setSharedColor(event.target.value);
+      const textInput = form.querySelector(`input[type="text"][data-field="${field}"]`);
+      if (textInput) textInput.value = event.target.value;
+    } else if (/^#[0-9a-f]{6}$/i.test(event.target.value)) {
+      if (field === "primaryColor") setSharedColor(event.target.value);
+      const colorInput = form.querySelector(`input[type="color"][data-field="${field}"]`);
+      if (colorInput) colorInput.value = event.target.value;
+    }
+    if (event.target.type === "checkbox") renderAll();
+    else renderOutput();
+  }
+
+  form.addEventListener("input", handleFormInput);
+  form.addEventListener("change", handleFormInput);
+
+  form.addEventListener("click", (event) => {
+    const action = event.target.dataset.action;
+    if (action === "importIntroToOutro") {
+      importIntroToOutro();
+      return;
+    }
+
+    if (event.target.hasAttribute("data-save-rule")) {
+      const rule = String(values[activeTemplate].rule || "").trim();
+      if (rule && !DEFAULT_RULE_CHIPS.includes(rule)) {
+        savedRules = uniqueList(savedRules.concat(rule));
+        renderAll();
+      }
+      return;
+    }
+    const useRule = event.target.dataset.useRule;
+    if (useRule) {
+      values[activeTemplate].rule = useRule;
+      renderAll();
+      return;
+    }
+    const removeRule = event.target.dataset.removeRule;
+    if (removeRule) {
+      savedRules = savedRules.filter((rule) => rule !== removeRule);
+      renderAll();
+      return;
+    }
+    const saveColorField = event.target.dataset.saveColor;
+    if (saveColorField) {
+      const color = normalizeColor(values[activeTemplate][saveColorField]);
+      if (color && !DEFAULT_COLOR_CHIPS.includes(color)) {
+        savedColors = uniqueList(savedColors.concat(color));
+        renderAll();
+      }
+      return;
+    }
+    const useColor = event.target.dataset.useColor;
+    if (useColor) {
+      setSharedColor(useColor);
+      renderAll();
+      return;
+    }
+    const removeColor = event.target.dataset.removeColor;
+    if (removeColor) {
+      savedColors = savedColors.filter((color) => color !== removeColor);
+      renderAll();
+      return;
+    }
+    const currentDateTimeField = event.target.dataset.currentDatetime;
+    if (currentDateTimeField) {
+      values[activeTemplate][currentDateTimeField] = formatDateTime(new Date());
+      renderAll();
+      return;
+    }
+    const addField = event.target.dataset.addRow;
+    if (addField) {
+      const field = templates[activeTemplate].fields.find((item) => item.id === addField);
+      const label = activeTemplate === "outro" && addField === "pcs" && values.outro?.outroNameMode
+        ? "PC"
+        : field?.labelOptions?.[0] || "";
+      values[activeTemplate][addField] = pcRows(values[activeTemplate][addField]).concat({ label, value: "" });
+      renderAll();
+      return;
+    }
+    const removeField = event.target.dataset.removeRow;
+    if (removeField) {
+      const index = Number(event.target.dataset.index);
+      const rows = pcRows(values[activeTemplate][removeField]).filter((_, rowIndex) => rowIndex !== index);
+      values[activeTemplate][removeField] = rows.length ? rows : [{ label: "", value: "" }];
+      renderAll();
+    }
+  });
+
+  previewWidth.addEventListener("input", renderOutput);
+  root.querySelector("#copyMacro").addEventListener("click", () => copyText(macroOutput.value));
+  root.querySelector("#resetForm").addEventListener("click", () => {
+    const defaults = defaultValues();
+    const sharedColor = activeColor();
+    values[activeTemplate] = defaults[activeTemplate];
+    setSharedColor(sharedColor);
+    renderAll();
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (!panel.classList.contains("open")) return;
+    if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "a") return;
+
+    const active = root.activeElement;
+    if (!active || !active.matches?.("input[type='text'], input[type='number'], textarea")) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (typeof active.select === "function") {
+      active.select();
+    } else if (typeof active.setSelectionRange === "function") {
+      active.setSelectionRange(0, active.value.length);
+    }
+  }, true);
+
+  let launcherDrag = null;
+  let launcherMoved = false;
+
+  launcher.addEventListener("mousedown", (event) => {
+    const rect = launcher.getBoundingClientRect();
+    launcherDrag = {
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+    launcherMoved = false;
+    event.preventDefault();
+  });
+
+  launcher.addEventListener("click", (event) => {
+    if (launcherMoved) {
+      event.preventDefault();
+      event.stopPropagation();
+      launcherMoved = false;
+      return;
+    }
+    panel.classList.add("open");
+    savePanelState();
+  });
+
+  closeButton.addEventListener("click", () => {
+    panel.classList.remove("open");
+    savePanelState();
+  });
+  resetPanelButton.addEventListener("click", resetPanelPosition);
+
+  let dragging = null;
+  titlebar.addEventListener("mousedown", (event) => {
+    if (event.target.closest("button")) return;
+    const rect = panel.getBoundingClientRect();
+    dragging = {
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+    };
+    event.preventDefault();
+  });
+  window.addEventListener("mousemove", (event) => {
+    if (launcherDrag) {
+      const movedX = Math.abs(event.clientX - launcherDrag.startX);
+      const movedY = Math.abs(event.clientY - launcherDrag.startY);
+      if (movedX > 3 || movedY > 3) launcherMoved = true;
+      setLauncherPosition(event.clientX - launcherDrag.offsetX, event.clientY - launcherDrag.offsetY);
+    }
+
+    if (!dragging) return;
+    const left = Math.max(0, Math.min(event.clientX - dragging.offsetX, window.innerWidth - 80));
+    const top = Math.max(0, Math.min(event.clientY - dragging.offsetY, window.innerHeight - 40));
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+  });
+  window.addEventListener("mouseup", () => {
+    if (launcherDrag) {
+      launcherDrag = null;
+      saveLauncherState();
+    }
+
+    if (!dragging) return;
+    dragging = null;
+    savePanelState();
+  });
+  new ResizeObserver(() => {
+    if (panel.classList.contains("open")) savePanelState();
+  }).observe(panel);
+  window.addEventListener("resize", adjustLauncherToViewport);
+
+  loadPanelState();
+  loadLauncherState();
+  loadState();
+  renderAll();
 })();
